@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <title>Todo List</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		html{
+			height: 100vh;
+			overflow-y : hidden;
+			font-family: 'Poppins', sans-serif;
+		}
+		body{
+			background-image: linear-gradient(120deg , #00a4ef , #a668f2);
+			height: 100%;
+			overflow-y : scroll;
+			font-family: 'Poppins', sans-serif;
+		}
+		input:focus , button:focus{
+			outline:none !important;
+			box-shadow: none !important;
+		}
+
+
+
+		/* to do list container */
+		.todoListContainer{width: 70% !important;}
+		ul{
+			list-style: none;
+		}
+
+		.todoItems{
+			width: 75%;
+			border-radius: 50px;
+			transition: all 0.5s ease-in-out !important;
+			opacity: 0;
+			background: #ffb900;
+		}
+		.todoTitle{
+			margin-bottom: 0;
+		}
+		.todoCompelete{
+			font: normal normal normal 14px/1 "FontAwesome";
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			width: 15px;
+			height: 15px;
+			border: 1px solid #fff;
+			border-radius: 2px;
+			cursor: pointer;
+		}
+		.todoCompelete:checked{
+			padding: 1px;
+			cursor: pointer;
+		}
+		.todoCompelete:checked:before{
+			content: "\f00c";
+			position: relative;
+			top: -2px;
+		}
+
+		.trash{
+			transition: all 0.4s ease-in-out !important;
+			background-color: #ff0000 !important;
+			padding: 10px 15px !important;
+			border-top-right-radius: 30px !important;
+			border-bottom-right-radius: 30px !important;
+		}
+		.trash i{
+			pointer-events: none;
+		}
+		.trash:hover{
+			background-color: #2cc41b !important;
+		}
+
+		/* animations */
+		.fade-in{
+			opacity:1;
+		}
+
+		.done{
+			opacity : 0.9;
+			background: rgb(127,186,0)
+		}
+		.done h4{
+			text-decoration: line-through;
+		}
+
+		@media(max-width:578px){
+			.todoListContainer{width: 100%;}
+			.todoTitle{font-size: 3vw;margin-bottom: 0;}
+		}
+
+		@media(min-width:578px) and (max-width:768px){
+			.todoItems{
+				width: 100% !important;
+				padding-right: 10px !important;
+				padding-left: 10px !important;
+			}
+		}	
+	</style>
+	<script src="https://kit.fontawesome.com/e7b96a4d31.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <form class="form container mx-auto">
+        <h1 class="w-50 pt-5 text-center mx-auto text-white">Todo List</h1>
+        <div class="mx-auto mb-3 w-75 mt-5 row">
+            <div class="input-group col-12 col-lg-10">
+                <input type="text" id="todoInput" class="form-control" placeholder="Add Todo's Here">
+                <div class="input-group-append d-block">
+                <button class="btn btn-success" type="button" id="todoInsert"><i class="fa fa-plus"></i></button>
+                </div>
+            </div>
+            <select class="col-12 col-lg-2 mt-3 mt-lg-0 custom-select" id="todoListDropdown">
+                <option value="0">All</option>
+                <option value="1">Compeleted</option>
+                <option value="2">Not Completed</option>
+            </select>
+        </div>
+    </form>
+
+    <div class="container todoListContainer mx-auto mt-5">
+        <ul id="todoList" class=""></ul>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script>
+		const todoInsert = document.querySelector("#todoInsert");
+		const todoInput = document.querySelector("#todoInput");
+		const todoList = document.querySelector("#todoList");
+		const form = document.querySelector(".form");
+		const dropDown = document.querySelector("#todoListDropdown");
+		let list = [];
+
+		// Event Listener
+		todoInsert.addEventListener("click" , addTodoList);
+		form.addEventListener('keypress' , addTodoListEnter);
+		dropDown.addEventListener("change" , filterTodo);
+		window.addEventListener("load" , uodateLocalStorage);
+
+		// Functions
+
+		// on click add to list
+		function addTodoList(e){
+			e.preventDefault(todoList.hei);
+			const todo = {
+				id : list.length + 1,
+				content : todoInput.value,
+				compelete : false,
+				animatoin : false
+			}
+			pushArray(todo);
+			insertItem();
+			clearInput();
+			fadeIn();
+			deleteTodo();
+			todoCheckCompelete();
+			return false;
+		}
+		// on enter add to list
+		function addTodoListEnter(e){
+			let key = e.charCode || e.keyCode || 0; 
+			if(key == 13){
+				e.preventDefault();
+				const todo = {
+					id : list.length + 1,
+					content : todoInput.value,
+					compelete : false
+				}
+				pushArray(todo);
+				pushToLocalStorage(list);
+				insertItem();
+				clearInput();
+				fadeIn();
+				deleteTodo();
+				todoCheckCompelete();
+				return false;
+			}
+		}
+
+		// if input value was not empty push it to list of todo
+		function pushArray(todo){
+			if(todoInput.value !== ""){
+				list.push(todo);
+			}else{
+				alert("input should have value");
+			}
+		}
+
+		// clear input after hit enter key or add button clicked
+		function clearInput(){
+			todoInput.value = "";
+		}
+
+		// make element and push data of array to it and add it to page
+		function insertItem(){
+			let li = "";
+			list.forEach((item , index ) => {
+				li = `<li class="todoItems my-2 mx-auto">
+				<div class="itemsContainer pl-4 row justify-content-around align-items-center">
+				<span class="todoIndex col-1">${index + 1}</span>
+				<h4 class="todoTitle col-7 col-sm-9">${item.content}</h4>
+				<input type="checkbox" class="fa todoCompelete" ${(item.compelete) ? "checked" : ""}>
+				<button class="btn trash"><i class="fas fa-trash"></i></button>
+				</div>
+				</li>`;
+			});
+
+			todoList.insertAdjacentHTML("beforeend" , li);
+		}
+
+		// fade in animation
+		function fadeIn(){
+			const todoItems = document.querySelector(".todoItems:last-child");
+			setTimeout( ()=>{todoItems.classList.add("fade-in")} , 100);
+		}
+
+		// delete operats 
+		function deleteTodo(){
+			const trash = document.querySelectorAll(".trash").forEach(item =>{ 
+				item.addEventListener("click" , deleteItem);
+			});
+			pushToLocalStorage(list);
+		}
+
+		// remove element from page and also remove item from list of todo array
+		function deleteItem(e){
+			const pElement = e.target.parentElement.parentElement;
+			const newList = Array.from(todoList.children);
+			newList.forEach((item , index ) =>{
+				if(item == pElement){
+					list.splice(index , 1);
+				}
+			});
+			pElement.remove();
+			updateIndex();
+			pushToLocalStorage(list);
+		}
+
+		// check compelete
+		function todoCheckCompelete(e){
+			const todoCheckbox = document.querySelectorAll(".todoCompelete");
+			todoCheckbox.forEach(item => 
+				item.addEventListener("change" , checkTodo)
+			);
+		}
+		// change the compelete proprety and change style of element !!
+		function checkTodo(e){
+			const id = parseInt(e.target.previousElementSibling.previousElementSibling.textContent) - 1;
+			const pElement = e.target.parentElement.parentElement;
+			list[id].compelete = !list[id].compelete;
+			pElement.classList.toggle("done");
+			pushToLocalStorage(list);
+		}
+
+		// update index each time an element remove
+		function updateIndex(){
+			const todoIndex = document.querySelectorAll(".todoIndex");
+			for(let i=0 ; i < list.length ; i++){
+				todoIndex[i].innerText = i + 1;
+			}
+		}
+
+		// filter todo list
+		function filterTodo(){
+			let dropDownValue = Number(dropDown.value);
+			if(todoList.childElementCount > 0){
+				const todoItems = document.querySelectorAll(".todoItems");
+				switch (dropDownValue){
+					case 1:
+						todoItems.forEach(item => {
+							(item.classList.contains("done")) ? item.style.display = "block" : item.style.display = "none"
+						});
+						break;
+					case 2:
+						todoItems.forEach(item => {
+							(item.classList.contains("done")) ? item.style.display = "none" : item.style.display = "block"
+						});
+						break;
+					default:
+						todoItems.forEach(item => item.style.display = "block");
+				}
+			}else{
+				alert("no todo found");
+			}
+		}
+
+		// update local storage with every item that add up to list
+		function pushToLocalStorage(value){
+			localStorage.setItem("todoList" , JSON.stringify(value));
+		}
+
+		// retreve data from local storage if exist
+		function uodateLocalStorage(){
+			if(localStorage.length > 0){
+				let todoInStorage = JSON.parse(localStorage.getItem("todoList"));
+				// console.log(JSON.parse(todoInStorage));
+				for(let i=0 ; i < todoInStorage.length;i++){
+					list[i] = todoInStorage[i];
+					insertItem();
+					fadeIn();
+					clearInput();
+					fadeIn();
+					deleteTodo();
+					todoCheckCompelete();
+				}
+				updateCheckbox();
+			}
+		}
+
+		// update element class if checked when read data from local storage
+		function updateCheckbox(){
+			const itemList = document.querySelectorAll(".todoCompelete");
+			itemList.forEach(item => {
+				(item.hasAttribute("checked")) ? item.parentElement.parentElement.classList.add("done") : ""
+			});
+		}	
+	</script>
+</body>
+</html>
